@@ -1,0 +1,40 @@
+name: 'Deploy Anywhere'
+description: 'Simplified deployment to popular cloud platforms'
+inputs:
+  provider:
+    description: 'Deployment provider (aws, azure, gcp, vercel, netlify)'
+    required: true
+  config_file:
+    description: 'Path to deployment configuration file'
+    required: false
+    default: '.deployrc'
+  directory:
+    description: 'Directory to deploy'
+    required: true
+    default: '.'
+  environment:
+    description: 'Deployment environment (prod, staging, dev)'
+    required: false
+    default: 'dev'
+  credentials:
+    description: 'Provider credentials (JSON string or path to file)'
+    required: true
+  language:
+    description: 'Programming language for building the project (node, python, java, go, ruby)'
+    required: false
+    default: 'node'
+outputs:
+  url:
+    description: 'Deployment URL'
+  version:
+    description: 'Deployed version or build ID'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.provider }}
+    - ${{ inputs.config_file }}
+    - ${{ inputs.directory }}
+    - ${{ inputs.environment }}
+    - ${{ inputs.credentials }}
+    - ${{ inputs.language }}

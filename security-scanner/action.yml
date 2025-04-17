@@ -1,0 +1,39 @@
+name: 'Security Scanner'
+description: 'Scan dependencies and code for vulnerabilities'
+inputs:
+  scan_type:
+    description: 'Type of scan to perform (dependencies, code, secrets, all)'
+    required: false
+    default: 'all'
+  directory:
+    description: 'Directory to scan'
+    required: false
+    default: '.'
+  severity:
+    description: 'Minimum severity to report (info, low, medium, high, critical)'
+    required: false
+    default: 'medium'
+  fail_on:
+    description: 'Severity level to fail the workflow on'
+    required: false
+    default: 'high'
+  pr_comment:
+    description: 'Comment security issues on PR'
+    required: false
+    default: 'true'
+outputs:
+  vulnerabilities:
+    description: 'Number of vulnerabilities found'
+  highest_severity:
+    description: 'Highest severity level found'
+  report_path:
+    description: 'Path to detailed report file'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.scan_type }}
+    - ${{ inputs.directory }}
+    - ${{ inputs.severity }}
+    - ${{ inputs.fail_on }}
+    - ${{ inputs.pr_comment }}

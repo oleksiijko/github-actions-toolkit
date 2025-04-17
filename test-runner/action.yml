@@ -1,0 +1,41 @@
+name: 'Test Runner'
+description: 'Smart test execution with caching and parallel processing'
+inputs:
+  framework:
+    description: 'Testing framework (jest, pytest, go, etc.)'
+    required: true
+  command:
+    description: 'Custom test command (overrides framework default)'
+    required: false
+  directories:
+    description: 'Directories to test (comma-separated)'
+    required: false
+    default: '.'
+  parallel:
+    description: 'Number of parallel processes'
+    required: false
+    default: 'auto'
+  cache:
+    description: 'Enable test result caching'
+    required: false
+    default: 'true'
+  pattern:
+    description: 'File pattern for tests'
+    required: false
+outputs:
+  passed:
+    description: 'Number of passed tests'
+  failed:
+    description: 'Number of failed tests'
+  time:
+    description: 'Total execution time'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.framework }}
+    - ${{ inputs.command }}
+    - ${{ inputs.directories }}
+    - ${{ inputs.parallel }}
+    - ${{ inputs.cache }}
+    - ${{ inputs.pattern }}

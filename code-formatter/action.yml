@@ -1,0 +1,32 @@
+name: 'Code Formatter'
+description: 'Format code for multiple languages with configurable style rules'
+inputs:
+  languages:
+    description: 'Languages to format (comma-separated)'
+    required: true
+    default: 'js,ts,py,go,rust,java,csharp,node,typescript,react,nextjs'
+  config_file:
+    description: 'Path to configuration file (optional)'
+    required: false
+    default: '.formatrc'
+  directories:
+    description: 'Directories to scan (comma-separated)'
+    required: false
+    default: '.'
+  fail_on_error:
+    description: 'Fail workflow if formatting issues are found'
+    required: false
+    default: 'true'
+  auto_fix:
+    description: 'Automatically fix formatting issues'
+    required: false
+    default: 'true'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.languages }}
+    - ${{ inputs.config_file }}
+    - ${{ inputs.directories }}
+    - ${{ inputs.fail_on_error }}
+    - ${{ inputs.auto_fix }}

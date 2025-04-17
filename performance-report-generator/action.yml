@@ -1,0 +1,16 @@
+name: 'Performance Report Generator'
+description: 'Generates a performance report using Lighthouse.'
+inputs:
+  url:
+    description: 'URL to test for performance.'
+    required: true
+  output_format:
+    description: 'Output format for the report (json, html).'
+    required: false
+    default: 'json'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.url }}
+    - ${{ inputs.output_format }}

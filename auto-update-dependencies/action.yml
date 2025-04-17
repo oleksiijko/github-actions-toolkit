@@ -1,0 +1,22 @@
+name: 'Auto Update Dependencies'
+description: 'Automatically updates dependencies to their latest versions.'
+inputs:
+  package_manager:
+    description: 'Package manager to use (npm, pip, yarn, etc.)'
+    required: true
+    default: 'npm'
+  commit_message:
+    description: 'Commit message for the update'
+    required: true
+    default: 'chore: update dependencies'
+  branch:
+    description: 'Branch to commit the updates'
+    required: false
+    default: 'main'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.package_manager }}
+    - ${{ inputs.commit_message }}
+    - ${{ inputs.branch }}

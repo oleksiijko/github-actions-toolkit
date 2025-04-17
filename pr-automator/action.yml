@@ -1,0 +1,39 @@
+name: 'PR Automator'
+description: 'Automated PR validation and description generation'
+inputs:
+  github_token:
+    description: 'GitHub token for API access'
+    required: true
+  pr_number:
+    description: 'PR number to analyze'
+    required: false
+  repository:
+    description: 'Repository name (owner/repo)'
+    required: false
+  generate_description:
+    description: 'Generate PR description if missing'
+    required: false
+    default: 'true'
+  validate_pr:
+    description: 'Validate PR against guidelines'
+    required: false
+    default: 'true'
+  guideline_file:
+    description: 'Path to PR guidelines file'
+    required: false
+    default: '.github/pr_guidelines.md'
+outputs:
+  status:
+    description: 'PR validation status (passed, failed)'
+  issues:
+    description: 'Issues found during validation'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.github_token }}
+    - ${{ inputs.pr_number }}
+    - ${{ inputs.repository }}
+    - ${{ inputs.generate_description }}
+    - ${{ inputs.validate_pr }}
+    - ${{ inputs.guideline_file }}
