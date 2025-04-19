@@ -182,7 +182,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('diff.md', 'utf8');
+            const body = fs.readFileSync('dep-diff.md', 'utf8');
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
