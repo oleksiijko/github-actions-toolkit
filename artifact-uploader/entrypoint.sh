@@ -1,14 +1,36 @@
 #!/bin/bash
 set -e
 
-echo "📦 Uploading artifact: $INPUT_NAME from path: $INPUT_PATH"
+echo "📦 Auto-collecting artifacts..."
 
-if [ ! -e "$INPUT_PATH" ]; then
-  echo "❌ Path $INPUT_PATH does not exist."
-  exit 1
+DEFAULT_PATHS=(
+  "dist"
+  "*.log"
+  "*.md"
+  "report.*"
+  "coverage"
+)
+
+FOUND_FILES=()
+
+for pattern in "${DEFAULT_PATHS[@]}"; do
+  matches=( $(find . -type f -path "./$pattern" -o -name "$pattern" 2>/dev/null) )
+  for match in "${matches[@]}"; do
+    FOUND_FILES+=("$match")
+  done
+done
+
+if [ ${#FOUND_FILES[@]} -eq 0 ]; then
+  echo "⚠️ No matching artifacts found. Exiting."
+  exit 0
 fi
 
 mkdir -p /artifacts
-cp -r "$INPUT_PATH" "/artifacts/$INPUT_NAME"
+for file in "${FOUND_FILES[@]}"; do
+  cp --parents "$file" /artifacts/
+done
 
-echo "✅ Artifact prepared at /artifacts/$INPUT_NAME"
+echo "✅ Collected ${#FOUND_FILES[@]} files:"
+for f in "${FOUND_FILES[@]}"; do
+  echo "  - $f"
+done
