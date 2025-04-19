@@ -1,5 +1,10 @@
-name: 'Chatops Pr Bot'
-description: 'TODO: Implement Chatops Pr Bot functionality.'
+name: 'chatops-pr-bot'
+description: 'chatops-pr-bot GitHub Action'
+
+inputs:
+  payload_path:
+    required: true
+    description: 'payload_path'
 
 runs:
   using: 'docker'

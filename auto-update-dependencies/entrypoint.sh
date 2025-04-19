@@ -1,28 +1,17 @@
 #!/bin/bash
 set -e
 
-PACKAGE_MANAGER=$1
-COMMIT_MESSAGE=$2
-BRANCH=$3
+PACKAGE_MANAGER=${INPUT_PACKAGE_MANAGER:-npm}
+COMMIT_MSG=${INPUT_COMMIT_MESSAGE:-"chore: update dependencies"}
+BRANCH=${INPUT_BRANCH:-main}
 
-# Configure Git
-git config --global user.email "action-bot@github.com"
-git config --global user.name "github-actions[bot]"
+echo "📦 Updating dependencies using $PACKAGE_MANAGER..."
 
-# Update dependencies
-if [ "$PACKAGE_MANAGER" = "npm" ]; then
+if [ "$PACKAGE_MANAGER" == "npm" ]; then
   npm install
   npm update
-elif [ "$PACKAGE_MANAGER" = "yarn" ]; then
-  yarn install
-  yarn upgrade
-elif [ "$PACKAGE_MANAGER" = "pip" ]; then
-  pip install --upgrade -r requirements.txt
-else
-  echo "Unsupported package manager: $PACKAGE_MANAGER"
-  exit 1
+  git config --global user.email "bot@example.com"
+  git config --global user.name "Update Bot"
+  git add package.json package-lock.json
+  git commit -m "$COMMIT_MSG" || echo "🟡 Nothing to commit"
 fi
-
-git add .
-git commit -m "$COMMIT_MESSAGE" || echo "No changes to commit"
-git push origin "$BRANCH"

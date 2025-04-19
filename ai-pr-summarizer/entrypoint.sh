@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-REPO=$1
-PR_NUMBER=$2
-OPENAI_API_KEY=$3
+REPO=${INPUT_REPO}
+PR_NUMBER=${INPUT_PR_NUMBER}
+OPENAI_API_KEY=${INPUT_OPENAI_API_KEY}
 
 echo "📦 Getting PR diff for $REPO #$PR_NUMBER..."
 

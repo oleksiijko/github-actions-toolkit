@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-# Эмуляция Webhook payload обработки
-PAYLOAD_FILE=$1
+PAYLOAD_FILE=${INPUT_PAYLOAD_PATH}
 COMMENT=$(jq -r '.comment.body' "$PAYLOAD_FILE")
 PR_NUMBER=$(jq -r '.issue.number' "$PAYLOAD_FILE")
 
