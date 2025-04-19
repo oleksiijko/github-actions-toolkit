@@ -24,7 +24,16 @@ RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
     ]
   }')
 
+echo "🧠 GPT Response:"
+echo "$RESPONSE"
+
 SUMMARY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
-echo "$SUMMARY" > summary.md
+if [ -z "$SUMMARY" ] || [ "$SUMMARY" == "null" ]; then
+  echo "⚠️ GPT returned empty or invalid response. Writing fallback summary..."
+  echo "⚠️ AI summary could not be generated. Please check inputs or API status." > summary.md
+else
+  echo "$SUMMARY" > summary.md
+fi
+
 echo "✅ AI Summary written to summary.md"
