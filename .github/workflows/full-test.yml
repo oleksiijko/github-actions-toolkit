@@ -1,0 +1,62 @@
+name: Full GitHub Actions Toolkit Test
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  summarize-pr:
+    name: 🤖 AI PR Summarizer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run AI PR Summarizer
+        uses: ./ai-pr-summarizer
+        with:
+          repo: your-user/github-actions-toolkit
+          pr_number: 1
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+
+  chatops-command:
+    name: 💬 ChatOps Command Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run ChatOps Bot
+        uses: ./chatops-pr-bot
+        with:
+          payload_path: ./examples/payload.json
+
+  code-formatter:
+    name: 🧹 Code Formatter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Format Example Code
+        uses: ./code-formatter
+        with:
+          example_input: prettier
+
+  update-deps:
+    name: 📦 Auto Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Working Dir
+        run: cd examples/nodejs-project && ls
+
+      - name: Run Dependency Updater
+        uses: ./auto-update-dependencies
+        with:
+          package_manager: npm
+          commit_message: "test: deps"
+          branch: main
