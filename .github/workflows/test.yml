@@ -11,6 +11,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Copy Example Node Project
+        run: cp -r ./examples/nodejs-project/* ./
+
       - name: Test Auto Update Dependencies
         uses: ./auto-update-dependencies
         with:
