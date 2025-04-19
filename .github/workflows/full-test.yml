@@ -243,10 +243,9 @@ jobs:
         uses: ./monorepo-splitter
         with:
           source: examples/nodejs-project
-          repo: https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/oleksiijko/example-split.git
+          target_repo: https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/oleksiijko/example-split.git
           branch: main
-    
-
+      
   setup-toolkit:
     name: ⚖️ Setup Toolkit
     runs-on: ubuntu-latest
