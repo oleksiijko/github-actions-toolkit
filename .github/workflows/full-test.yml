@@ -175,6 +175,20 @@ jobs:
 
       - name: Show Dependency Diff
         run: cat deps-diff.md || echo "No diff found"
+      
+      - name: 📬 Post Dependency Diff Comment to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('diff.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
 
       - uses: actions/upload-artifact@v4
         with:

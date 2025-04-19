@@ -1,8 +1,13 @@
 name: 'Dependency Diff'
-description: 'Compares old and new package.json dependencies.'
+description: 'Detects changes in dependencies between branches or commits'
+
 inputs:
+  base:
+    description: 'Base ref to compare against (default: main)'
+    required: false
+    default: 'main'
   path:
-    description: 'Path to the package.json file or directory containing it'
+    description: 'Path to package directory or monorepo sub-folder'
     required: false
     default: '.'
 

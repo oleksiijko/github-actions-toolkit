@@ -1,47 +1,20 @@
 #!/bin/bash
 set -e
 
-TARGET_DIR="${INPUT_PATH:-.}"
+BASE_REF="${INPUT_BASE:-main}"
+TARGET_PATH="${INPUT_PATH:-.}"
 
-echo "📦 Comparing dependencies in: $TARGET_DIR"
+echo "🔍 Comparing dependencies with base ref: $BASE_REF"
 
-cd "$TARGET_DIR"
+git fetch origin "$BASE_REF"
 
-if [ ! -f package.json ]; then
-  echo "❌ No package.json found in $TARGET_DIR"
-  exit 1
-fi
+# Create temporary copies
+mkdir -p /tmp/base /tmp/head
 
-cp package.json package.json.before
+git show "origin/$BASE_REF:$TARGET_PATH/package-lock.json" > /tmp/base/package-lock.json || echo "{}" > /tmp/base/package-lock.json
+cp "$TARGET_PATH/package-lock.json" /tmp/head/package-lock.json || echo "{}" > /tmp/head/package-lock.json
 
-echo "🧪 Installing..."
-npm install --package-lock-only > /dev/null 2>&1
+node /app/utils/diff.js /tmp/base/package-lock.json /tmp/head/package-lock.json > diff.md
 
-echo "🔄 Comparing package-lock.json diff..."
-npm install > /dev/null 2>&1
-cp package.json package.json.after
-
-ADDED=$(diff -u package.json.before package.json.after | grep '^+\s*"' | grep -v '^+++' || true)
-REMOVED=$(diff -u package.json.before package.json.after | grep '^-\s*"' | grep -v '^---' || true)
-
-{
-  echo "## 📦 Dependency Diff"
-  echo ""
-  if [[ -n "$ADDED" ]]; then
-    echo "### ➕ Added:"
-    echo '```diff'
-    echo "$ADDED"
-    echo '```'
-  fi
-  if [[ -n "$REMOVED" ]]; then
-    echo "### ➖ Removed:"
-    echo '```diff'
-    echo "$REMOVED"
-    echo '```'
-  fi
-  if [[ -z "$ADDED" && -z "$REMOVED" ]]; then
-    echo "✅ No changes in dependencies."
-  fi
-} > deps-diff.md
-
-echo "✅ Dependency diff saved to deps-diff.md"
+echo "📋 Dependency diff generated:"
+cat diff.md
