@@ -1,20 +1,25 @@
 #!/bin/bash
 set -e
 
-BASE_REF="${INPUT_BASE:-main}"
-TARGET_PATH="${INPUT_PATH:-.}"
+git config --global --add safe.directory /github/workspace
 
-echo "🔍 Comparing dependencies with base ref: $BASE_REF"
+echo "🔍 Comparing dependencies with base ref: $INPUT_BASE"
 
-git fetch origin "$BASE_REF"
+cd "$INPUT_PATH"
 
-# Create temporary copies
-mkdir -p /tmp/base /tmp/head
+git fetch origin "$INPUT_BASE"
 
-git show "origin/$BASE_REF:$TARGET_PATH/package-lock.json" > /tmp/base/package-lock.json || echo "{}" > /tmp/base/package-lock.json
-cp "$TARGET_PATH/package-lock.json" /tmp/head/package-lock.json || echo "{}" > /tmp/head/package-lock.json
+diff=$(git diff origin/"$INPUT_BASE"...HEAD -- package.json || true)
 
-node /app/utils/diff.js /tmp/base/package-lock.json /tmp/head/package-lock.json > diff.md
+if [ -z "$diff" ]; then
+  echo "✅ No changes in package.json"
+  echo "No dependency changes detected." > dep-diff.md
+else
+  echo "📦 Changes detected in package.json:"
+  echo "$diff"
+  echo '```diff' > dep-diff.md
+  echo "$diff" >> dep-diff.md
+  echo '```' >> dep-diff.md
+fi
 
-echo "📋 Dependency diff generated:"
-cat diff.md
+cat dep-diff.md
