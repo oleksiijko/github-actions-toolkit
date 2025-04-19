@@ -212,7 +212,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./artifact-uploader
+
+      - name: 🏗️ Prepare Artifact
+        uses: ./artifact-uploader
+        with:
+          name: example-artifact
+          path: ./examples/nodejs-project/package.json
+
+      - name: ⬆ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-artifact
+          path: /artifacts/example-artifact
+        
 
   deploy-anywhere:
     name: 🌐 Deploy Anywhere
