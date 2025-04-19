@@ -6,17 +6,17 @@ on:
   pull_request:
 
 jobs:
-  test-toolkit:
+  summarize-pr:
+    name: 🤖 AI PR Summarizer
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
 
-      # ✅ AI PR Summarizer
       - name: Run AI PR Summarizer
         uses: ./ai-pr-summarizer
         with:
-          repo: ${{ github.repository }}
+          repo: your-user/github-actions-toolkit
           pr_number: 1
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
@@ -29,25 +29,49 @@ jobs:
           name: pr-summary
           path: summary.md
 
-      # ✅ ChatOps Command Test
-      - name: Run ChatOps PR Bot
+  chatops-command:
+    name: 💬 ChatOps Command Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run ChatOps Bot
         uses: ./chatops-pr-bot
         with:
           payload_path: ./examples/payload.json
 
-      # ✅ Code Formatter
-      - name: Run Code Formatter
+  code-formatter:
+    name: 🧹 Code Formatter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Copy Example Files
+        run: cp -r ./examples/nodejs-project/* ./
+
+      - name: Format Code
         uses: ./code-formatter
-        with:
-          example_input: prettier
 
       - name: Show formatted files
         run: git diff --stat || echo "No changes"
+        with:
+          example_input: prettier
 
-      # ✅ Auto Update Dependencies
-      - name: Run Auto Update
+  update-deps:
+    name: 📦 Auto Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Copy Node Project
+        run: cp -r ./examples/nodejs-project/* ./
+
+      - name: Run Dependency Updater
         uses: ./auto-update-dependencies
         with:
           package_manager: npm
-          commit_message: "chore: auto-update deps"
+          commit_message: "test: deps"
           branch: main
