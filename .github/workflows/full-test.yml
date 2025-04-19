@@ -19,6 +19,8 @@ jobs:
           repo: your-user/github-actions-toolkit
           pr_number: 1
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print GPT Summary
         run: cat summary.md
