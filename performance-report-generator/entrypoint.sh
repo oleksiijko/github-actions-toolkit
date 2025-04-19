@@ -9,7 +9,11 @@ if [ -z "$URL" ]; then
   exit 1
 fi
 
-# Запуск Lighthouse
-lighthouse "$URL" --output "$OUTPUT_FORMAT" --output-path "./report.$OUTPUT_FORMAT"
+echo "🌐 Running Lighthouse on $URL (format: $OUTPUT_FORMAT)..."
+
+lighthouse "$URL" \
+  --output "$OUTPUT_FORMAT" \
+  --output-path "./report.$OUTPUT_FORMAT" \
+  --chrome-flags="--no-sandbox"
 
 echo "✅ Performance report saved as report.$OUTPUT_FORMAT"
