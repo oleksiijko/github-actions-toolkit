@@ -6,60 +6,48 @@ on:
   pull_request:
 
 jobs:
-  summarize-pr:
-    name: 🤖 AI PR Summarizer
+  test-toolkit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # ✅ AI PR Summarizer
       - name: Run AI PR Summarizer
         uses: ./ai-pr-summarizer
         with:
-          repo: your-user/github-actions-toolkit
+          repo: ${{ github.repository }}
           pr_number: 1
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
-  chatops-command:
-    name: 💬 ChatOps Command Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Print GPT Summary
+        run: cat summary.md
 
-      - name: Run ChatOps Bot
+      - name: Upload PR Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-summary
+          path: summary.md
+
+      # ✅ ChatOps Command Test
+      - name: Run ChatOps PR Bot
         uses: ./chatops-pr-bot
         with:
           payload_path: ./examples/payload.json
 
-  code-formatter:
-    name: 🧹 Code Formatter
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Copy Example Files
-        run: cp -r ./examples/nodejs-project/* ./
-
-      - name: Format Code
+      # ✅ Code Formatter
+      - name: Run Code Formatter
         uses: ./code-formatter
         with:
           example_input: prettier
 
-  update-deps:
-    name: 📦 Auto Update Dependencies
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Show formatted files
+        run: git diff --stat || echo "No changes"
 
-      - name: Copy Node Project
-        run: cp -r ./examples/nodejs-project/* ./
-
-      - name: Run Dependency Updater
+      # ✅ Auto Update Dependencies
+      - name: Run Auto Update
         uses: ./auto-update-dependencies
         with:
           package_manager: npm
-          commit_message: "test: deps"
+          commit_message: "chore: auto-update deps"
           branch: main
