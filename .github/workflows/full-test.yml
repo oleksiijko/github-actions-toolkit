@@ -10,6 +10,11 @@ jobs:
     name: 🤖 AI PR Summarizer
     runs-on: ubuntu-latest
     steps:
+      - name: Debug PR values
+        run: |
+          echo "repo = ${{ github.repository }}"
+          echo "pr_number = ${{ github.event.pull_request.number }}"
+          
       - name: Checkout
         uses: actions/checkout@v3
 
