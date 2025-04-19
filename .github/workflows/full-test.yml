@@ -5,6 +5,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  pull-requests: write
+
 jobs:
   summarize-pr:
     name: 🤖 AI PR Summarizer
