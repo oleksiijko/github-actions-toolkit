@@ -255,17 +255,6 @@ jobs:
         uses: ./setup-toolkit
         with:
           modules: all
-      - name: 📝 Commit setup changes
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN_CL }}@github.com/${{ github.repository }}
-          git add .github/
-          git commit -m "chore: bootstrap toolkit with workflows/configs" || echo "No changes to commit"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
         
 
   pr-automator:
@@ -273,7 +262,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./pr-automator
+
+      - name: Run PR Automator
+        uses: ./pr-automator
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ github.event.pull_request.number }}
+          repository: ${{ github.repository }}
+          generate_description: true
+          validate_pr: true
+          guideline_file: .github/pr_guidelines.md
 
   test-matrix:
     name: 📊 Matrix Runner
