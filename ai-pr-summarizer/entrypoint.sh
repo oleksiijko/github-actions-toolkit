@@ -5,10 +5,17 @@ REPO=${INPUT_REPO}
 PR_NUMBER=${INPUT_PR_NUMBER}
 OPENAI_API_KEY=${INPUT_OPENAI_API_KEY}
 
+# Проверка входных данных
+if [ -z "$REPO" ] || [ -z "$PR_NUMBER" ] || [ -z "$OPENAI_API_KEY" ]; then
+  echo "❌ Missing one or more required inputs: REPO, PR_NUMBER, or OPENAI_API_KEY"
+  exit 1
+fi
+
+echo "🔗 PR Link: https://github.com/$REPO/pull/$PR_NUMBER"
 echo "📦 Getting PR diff for $REPO #$PR_NUMBER..."
 
-PR_DIFF=$(curl -s -L \
-  "https://patch-diff.githubusercontent.com/raw/$REPO/pull/$PR_NUMBER.diff")
+# Получение diff
+PR_DIFF=$(curl -s -L "https://patch-diff.githubusercontent.com/raw/$REPO/pull/$PR_NUMBER.diff")
 
 if [ -z "$PR_DIFF" ]; then
   echo "❌ Failed to fetch PR diff."
@@ -18,10 +25,10 @@ fi
 
 echo "📤 Sending diff to GPT..."
 
-# Write diff to file for proper escaping
+# Сохраняем diff во временный файл
 echo "$PR_DIFF" > pr.diff
 
-# Build proper JSON payload using jq
+# Создание корректного JSON payload с помощью jq
 jq -n --arg diff "$(cat pr.diff)" '{
   model: "gpt-3.5-turbo",
   messages: [
@@ -30,7 +37,7 @@ jq -n --arg diff "$(cat pr.diff)" '{
   ]
 }' > payload.json
 
-# Make GPT request
+# Запрос к OpenAI
 RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
@@ -39,7 +46,7 @@ RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
 echo "🧠 GPT Raw Response:"
 echo "$RESPONSE"
 
-# Extract summary safely
+# Парсинг ответа
 SUMMARY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
 
 if [ -z "$SUMMARY" ]; then
