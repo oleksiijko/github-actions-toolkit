@@ -259,7 +259,7 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN_CL }}@github.com/${{ github.repository }}
           git add .github/
           git commit -m "chore: bootstrap toolkit with workflows/configs" || echo "No changes to commit"
           git push origin HEAD:${GITHUB_REF#refs/heads/}
