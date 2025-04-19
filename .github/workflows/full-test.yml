@@ -151,6 +151,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./badge-generator
+        with:
+          label: build
+          message: passing
+          color: green
+          filename: badge.svg
+
+      - name: 📂 Upload Badge
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-badge
+          path: badge.svg
 
   dependency-diff:
     name: 📦 Dependency Diff

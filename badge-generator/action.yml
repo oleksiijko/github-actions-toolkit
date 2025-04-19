@@ -1,5 +1,21 @@
 name: 'Badge Generator'
-description: 'TODO: Implement Badge Generator functionality.'
+description: 'Generates a custom SVG badge (label, value, color).'
+
+inputs:
+  label:
+    description: 'Left-hand label on the badge'
+    required: true
+  message:
+    description: 'Right-hand message on the badge'
+    required: true
+  color:
+    description: 'Badge color (e.g., green, red, blue)'
+    required: false
+    default: 'gray'
+  filename:
+    description: 'Output filename for the badge (e.g., badge.svg)'
+    required: false
+    default: 'badge.svg'
 
 runs:
   using: 'docker'
