@@ -216,11 +216,9 @@ jobs:
       - run: echo "hello artifact" > report.md
 
       - uses: ./artifact-uploader
-
-      - uses: actions/upload-artifact@v4
         with:
           name: collected-artifacts
-          path: /artifacts
+          path: report.md
 
   deploy-anywhere:
     name: 🌐 Deploy Anywhere

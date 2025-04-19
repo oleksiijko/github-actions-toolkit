@@ -12,8 +12,11 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: 📦 Upload artifact
-      uses: actions/upload-artifact@v4
+    - run: |
+        echo "📦 Uploading artifact: ${{ inputs.name }} from path: ${{ inputs.path }}"
+      shell: bash
+
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.name }}
         path: ${{ inputs.path }}
