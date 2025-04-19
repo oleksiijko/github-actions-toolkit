@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Code Complexity Analyzer
 
-Sets up required tools or environment for other actions.
+Analyzes code complexity and outputs a report (e.g. via radon, eslint).
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Code Complexity Analyzer
+  uses: ./github-actions-toolkit/code-complexity-analyzer
   with:
     example_input: value
 ```

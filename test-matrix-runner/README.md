@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Test Matrix Runner
 
-Sets up required tools or environment for other actions.
+Runs tests using matrix strategy (e.g. different versions/platforms).
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Test Matrix Runner
+  uses: ./github-actions-toolkit/test-matrix-runner
   with:
     example_input: value
 ```

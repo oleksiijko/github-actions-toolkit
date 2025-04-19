@@ -1,0 +1,6 @@
+name: 'Dead Code Cleaner'
+description: 'TODO: Implement Dead Code Cleaner functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

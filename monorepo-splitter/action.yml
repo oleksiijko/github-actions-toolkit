@@ -1,0 +1,6 @@
+name: 'Monorepo Splitter'
+description: 'TODO: Implement Monorepo Splitter functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

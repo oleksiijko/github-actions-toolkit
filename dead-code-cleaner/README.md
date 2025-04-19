@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Dead Code Cleaner
 
-Sets up required tools or environment for other actions.
+Detects and flags unused code (e.g. via vulture or ts-prune).
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Dead Code Cleaner
+  uses: ./github-actions-toolkit/dead-code-cleaner
   with:
     example_input: value
 ```

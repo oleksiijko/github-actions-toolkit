@@ -1,0 +1,6 @@
+name: 'Code Complexity Analyzer'
+description: 'TODO: Implement Code Complexity Analyzer functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

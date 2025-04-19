@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Dependency Diff
 
-Sets up required tools or environment for other actions.
+Shows a diff of dependency versions before/after updates.
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Dependency Diff
+  uses: ./github-actions-toolkit/dependency-diff
   with:
     example_input: value
 ```

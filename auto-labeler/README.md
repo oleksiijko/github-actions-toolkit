@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Auto Labeler
 
-Sets up required tools or environment for other actions.
+Automatically adds labels to PRs based on file paths or content.
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Auto Labeler
+  uses: ./github-actions-toolkit/auto-labeler
   with:
     example_input: value
 ```

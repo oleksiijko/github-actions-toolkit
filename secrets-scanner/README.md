@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Secrets Scanner
 
-Sets up required tools or environment for other actions.
+Scans source for secrets (e.g. API keys) using gitleaks or truffleHog.
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Secrets Scanner
+  uses: ./github-actions-toolkit/secrets-scanner
   with:
     example_input: value
 ```
