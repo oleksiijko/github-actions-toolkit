@@ -1,5 +1,10 @@
 name: 'Dependency Diff'
-description: 'TODO: Implement Dependency Diff functionality.'
+description: 'Compares old and new package.json dependencies.'
+inputs:
+  path:
+    description: 'Path to the package.json file or directory containing it'
+    required: false
+    default: '.'
 
 runs:
   using: 'docker'

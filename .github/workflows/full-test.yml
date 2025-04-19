@@ -168,7 +168,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./dependency-diff
+      - name: Run Dependency Diff
+        uses: ./dependency-diff
+        with:
+          path: ./examples/nodejs-project
+
+      - name: Show Dependency Diff
+        run: cat deps-diff.md || echo "No diff found"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-diff
+          path: deps-diff.md
+        
 
   dead-code:
     name: 🧹 Dead Code Cleaner
