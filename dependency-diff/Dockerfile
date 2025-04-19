@@ -2,8 +2,9 @@ FROM node:18-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y git
+
 COPY entrypoint.sh /entrypoint.sh
-COPY utils /app/utils
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
