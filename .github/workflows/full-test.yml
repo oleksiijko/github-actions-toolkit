@@ -260,10 +260,11 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add .github/
-          git commit -m "chore: bootstrap toolkit with workflows/configs" || echo "No changes"
-          git push
+          git commit -m "chore: bootstrap toolkit with workflows/configs" || echo "No changes to commit"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
         
 
   pr-automator:
