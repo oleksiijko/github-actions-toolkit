@@ -1,0 +1,6 @@
+name: 'Auto Labeler'
+description: 'TODO: Implement Auto Labeler functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

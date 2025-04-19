@@ -1,0 +1,6 @@
+name: 'Dependency Diff'
+description: 'TODO: Implement Dependency Diff functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

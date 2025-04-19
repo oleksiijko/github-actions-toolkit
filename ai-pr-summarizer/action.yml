@@ -1,0 +1,17 @@
+name: 'ai-pr-summarizer'
+description: 'ai-pr-summarizer GitHub Action'
+
+inputs:
+  repo:
+    required: true
+    description: 'repo'
+  pr_number:
+    required: true
+    description: 'pr_number'
+  openai_api_key:
+    required: true
+    description: 'openai_api_key'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

@@ -1,0 +1,11 @@
+name: 'chatops-pr-bot'
+description: 'chatops-pr-bot GitHub Action'
+
+inputs:
+  payload_path:
+    required: true
+    description: 'payload_path'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

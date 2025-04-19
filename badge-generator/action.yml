@@ -1,0 +1,6 @@
+name: 'Badge Generator'
+description: 'TODO: Implement Badge Generator functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

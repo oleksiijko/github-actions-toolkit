@@ -1,0 +1,24 @@
+name: Test Actions
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Test Auto Update Dependencies
+        uses: ./auto-update-dependencies
+        with:
+          package_manager: npm
+          commit_message: "test: update"
+          branch: main
+
+      - name: Test Code Formatter
+        uses: ./code-formatter
+        with:
+          example_input: prettier

@@ -1,22 +1,17 @@
-name: 'Auto Update Dependencies'
-description: 'Automatically updates dependencies to their latest versions.'
+name: 'auto-update-dependencies'
+description: 'auto-update-dependencies GitHub Action'
+
 inputs:
   package_manager:
-    description: 'Package manager to use (npm, pip, yarn, etc.)'
     required: true
-    default: 'npm'
+    description: 'package_manager'
   commit_message:
-    description: 'Commit message for the update'
-    required: true
-    default: 'chore: update dependencies'
-  branch:
-    description: 'Branch to commit the updates'
     required: false
-    default: 'main'
+    description: 'commit_message'
+  branch:
+    required: false
+    description: 'branch'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  args:
-    - ${{ inputs.package_manager }}
-    - ${{ inputs.commit_message }}
-    - ${{ inputs.branch }}
