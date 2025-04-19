@@ -239,11 +239,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: ./monorepo-splitter
+      - name: Run Monorepo Splitter
+        uses: ./monorepo-splitter
         with:
           source: packages/example
-          target_repo: git@github.com:your-user/example-split.git
-
+          repo: git@github.com:${{ github.repository_owner }}/example-split.git
+          branch: main
+    
 
   setup-toolkit:
     name: ⚖️ Setup Toolkit
