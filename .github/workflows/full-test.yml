@@ -53,11 +53,11 @@ jobs:
 
       - name: Format Code
         uses: ./code-formatter
+        with:
+          example_input: prettier
 
       - name: Show formatted files
         run: git diff --stat || echo "No changes"
-        with:
-          example_input: prettier
 
   update-deps:
     name: 📦 Auto Update Dependencies
