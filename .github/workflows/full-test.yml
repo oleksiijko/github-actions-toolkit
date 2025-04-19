@@ -201,7 +201,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: ./dead-code-cleaner
+        with:
+          path: ./examples/nodejs-project
+        
 
   artifact-upload:
     name: 💾 Artifact Uploader

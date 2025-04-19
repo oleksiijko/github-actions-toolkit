@@ -1,5 +1,11 @@
 name: 'Dead Code Cleaner'
-description: 'TODO: Implement Dead Code Cleaner functionality.'
+description: 'Finds and removes dead (unused) code.'
+
+inputs:
+  path:
+    description: 'Path to source files to analyze'
+    required: false
+    default: '.'
 
 runs:
   using: 'docker'
