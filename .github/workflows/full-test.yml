@@ -10,13 +10,7 @@ jobs:
     name: 🤖 AI PR Summarizer
     runs-on: ubuntu-latest
     steps:
-      - name: Debug PR values
-        run: |
-          echo "repo = ${{ github.repository }}"
-          echo "pr_number = ${{ github.event.pull_request.number }}"
-          
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Run AI PR Summarizer
         uses: ./ai-pr-summarizer
@@ -27,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print GPT Summary
-        run: cat summary.md
+        run: cat summary.md || echo "No summary generated"
 
       - name: Upload PR Summary
         uses: actions/upload-artifact@v4
@@ -39,11 +33,8 @@ jobs:
     name: 💬 ChatOps Command Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run ChatOps Bot
-        uses: ./chatops-pr-bot
+      - uses: actions/checkout@v3
+      - uses: ./chatops-pr-bot
         with:
           payload_path: ./examples/payload.json
 
@@ -51,17 +42,11 @@ jobs:
     name: 🧹 Code Formatter
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Copy Example Files
-        run: cp -r ./examples/nodejs-project/* ./
-
-      - name: Format Code
-        uses: ./code-formatter
+      - uses: actions/checkout@v3
+      - run: cp -r ./examples/nodejs-project/* ./
+      - uses: ./code-formatter
         with:
           example_input: prettier
-
       - name: Show formatted files
         run: git diff --stat || echo "No changes"
 
@@ -69,15 +54,108 @@ jobs:
     name: 📦 Auto Update Dependencies
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Copy Node Project
-        run: cp -r ./examples/nodejs-project/* ./
-
-      - name: Run Dependency Updater
-        uses: ./auto-update-dependencies
+      - uses: actions/checkout@v3
+      - run: cp -r ./examples/nodejs-project/* ./
+      - uses: ./auto-update-dependencies
         with:
           package_manager: npm
           commit_message: "test: deps"
           branch: main
+
+  secrets-scan:
+    name: 🔐 Secrets Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./secrets-scanner
+
+  security-scan:
+    name: 🔒 Security Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./security-scanner
+
+  performance-report:
+    name: 📊 Performance Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./performance-report-generator
+
+  badge-gen:
+    name: 🏅 Badge Generator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./badge-generator
+
+  dependency-diff:
+    name: 📦 Dependency Diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./dependency-diff
+
+  dead-code:
+    name: 🧹 Dead Code Cleaner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./dead-code-cleaner
+
+  artifact-upload:
+    name: 💾 Artifact Uploader
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./artifact-uploader
+
+  deploy-anywhere:
+    name: 🌐 Deploy Anywhere
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./deploy-anywhere
+
+  monorepo-splitter:
+    name: 📄 Monorepo Splitter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./monorepo-splitter
+
+  setup-toolkit:
+    name: ⚖️ Setup Toolkit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./setup-toolkit
+
+  pr-automator:
+    name: 🔄 PR Automator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./pr-automator
+
+  test-matrix:
+    name: 📊 Matrix Runner
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16, 18]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: ./test-matrix-runner
+
+  test-runner:
+    name: ✅ Test Runner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./test-runner
