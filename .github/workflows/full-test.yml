@@ -77,26 +77,70 @@ jobs:
       - uses: ./security-scanner
 
   performance-report:
-    name: 📊 Performance Report
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: 📄 Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Run Performance Report Generator
+      - name: 🌐 Run Performance Report Generator
         uses: ./performance-report-generator
         with:
           url: https://example.com
           output_format: json
 
-      - name: Show Report File
+      - name: 📃 Show Report File
         run: cat report.json || echo "Report not found"
 
-      - name: Upload Report
+      - name: 📂 Upload JSON Report
         uses: actions/upload-artifact@v4
         with:
           name: performance-report
           path: report.json
+
+      - name: 📝 Generate Markdown Summary
+        run: |
+          echo "## ✨ Lighthouse Summary" > summary.md
+          echo "" >> summary.md
+          echo "| Metric | Value |" >> summary.md
+          echo "|--------|-------|" >> summary.md
+          echo "| LCP | $(jq -r '.audits["largest-contentful-paint"].displayValue' report.json) |" >> summary.md
+          echo "| CLS | $(jq -r '.audits["cumulative-layout-shift"].displayValue' report.json) |" >> summary.md
+          echo "| TBT | $(jq -r '.audits["total-blocking-time"].displayValue' report.json) |" >> summary.md
+          echo "| FCP | $(jq -r '.audits["first-contentful-paint"].displayValue' report.json) |" >> summary.md
+          echo "| TTI | $(jq -r '.audits["interactive"].displayValue' report.json) |" >> summary.md
+
+      - name: 📝 Upload Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-summary
+          path: summary.md
+
+      - name: 👁️ Print Markdown Summary in UI
+        run: cat summary.md
+
+      - name: 🚨 Alert on Poor LCP
+        run: |
+          LCP=$(jq -r '.audits["largest-contentful-paint"].numericValue' report.json)
+          if (( $(echo "$LCP > 2500" | bc -l) )); then
+            echo "::warning::LCP is high: ${LCP}ms"
+          else
+            echo "LCP is fine: ${LCP}ms"
+          fi
+
+      - name: 📬 Post Comment to PR (Optional)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+          result-encoding: string
 
   badge-gen:
     name: 🏅 Badge Generator
