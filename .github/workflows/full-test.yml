@@ -238,7 +238,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: ./monorepo-splitter
+        with:
+          source: packages/example
+          target_repo: git@github.com:your-user/example-split.git
+
 
   setup-toolkit:
     name: ⚖️ Setup Toolkit
