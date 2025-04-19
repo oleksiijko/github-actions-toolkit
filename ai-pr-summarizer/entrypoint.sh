@@ -7,9 +7,9 @@ OPENAI_API_KEY=${INPUT_OPENAI_API_KEY}
 
 echo "📦 Getting PR diff for $REPO #$PR_NUMBER..."
 
-PR_DIFF=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-  -H "Accept: application/vnd.github.v3.diff" \
-  "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER")
+PR_DIFF=$(curl -s -L \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  "https://patch-diff.githubusercontent.com/raw/$REPO/pull/$PR_NUMBER.diff")
 
 if [ -z "$PR_DIFF" ]; then
   echo "❌ Failed to fetch PR diff."
