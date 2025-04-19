@@ -242,7 +242,7 @@ jobs:
       - name: Run Monorepo Splitter
         uses: ./monorepo-splitter
         with:
-          source: packages/example
+          source: examples/nodejs-project
           repo: git@github.com:${{ github.repository_owner }}/example-split.git
           branch: main
     
