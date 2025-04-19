@@ -243,7 +243,7 @@ jobs:
         uses: ./monorepo-splitter
         with:
           source: examples/nodejs-project
-          repo: git@github.com:${{ github.repository_owner }}/example-split.git
+          repo: https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/oleksiijko/example-split.git
           branch: main
     
 
