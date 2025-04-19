@@ -21,7 +21,6 @@ jobs:
       - name: Run AI PR Summarizer
         uses: ./ai-pr-summarizer
         with:
-          repo: your-user/github-actions-toolkit
           pr_number: ${{ github.event.pull_request.number }}
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
         env:
