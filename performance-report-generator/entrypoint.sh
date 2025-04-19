@@ -14,6 +14,6 @@ echo "🌐 Running Lighthouse on $URL (format: $OUTPUT_FORMAT)..."
 lighthouse "$URL" \
   --output "$OUTPUT_FORMAT" \
   --output-path "./report.$OUTPUT_FORMAT" \
-  --chrome-flags="--no-sandbox"
+  --chrome-flags="--no-sandbox --headless --disable-gpu --disable-dev-shm-usage"
 
 echo "✅ Performance report saved as report.$OUTPUT_FORMAT"
