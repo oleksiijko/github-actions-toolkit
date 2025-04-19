@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 git config --global --add safe.directory /github/workspace
@@ -22,4 +22,4 @@ else
   echo '```' >> dep-diff.md
 fi
 
-cat dep-diff.md
+cp dep-diff.md /github/workspace/dep-diff.md
