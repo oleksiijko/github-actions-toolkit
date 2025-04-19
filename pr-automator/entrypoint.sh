@@ -32,7 +32,6 @@ import sys
 from github import Github
 import git
 import mistletoe
-from mistletoe
 import subprocess
 import json
 from mistletoe.markdown_renderer import MarkdownRenderer
@@ -82,11 +81,11 @@ total_changes = additions + deletions
 # Generate PR description if enabled and current description is empty
 if generate_description and (pr.body is None or pr.body.strip() == ''):
     print("Generating PR description...")
-    
+
     # Get commit messages
     commits = list(pr.get_commits())
     commit_messages = [commit.commit.message for commit in commits]
-    
+
     # Generate description
     description = f"""# PR: {pr.title}
 
@@ -116,7 +115,7 @@ This PR makes the following changes:
 
 <!-- Please describe the testing that has been done -->
 """
-    
+
     # Update PR description
     pr.edit(body=description)
     print("PR description updated.")
@@ -125,7 +124,7 @@ This PR makes the following changes:
 issues = []
 if validate_pr:
     print("Validating PR against guidelines...")
-    
+
     # Check if guideline file exists
     guideline_content = None
     try:
@@ -133,25 +132,25 @@ if validate_pr:
         guideline_content = content_file.decoded_content.decode('utf-8')
     except:
         print(f"No guideline file found at {guideline_file}")
-    
+
     # Basic validations
     if pr.title.lower().startswith('wip:'):
         issues.append("PR is marked as Work in Progress")
-    
+
     if pr.body is None or len(pr.body.strip()) < 50:
         issues.append("PR description is too short or missing")
-    
+
     # Check commit messages
     for commit in pr.get_commits():
         msg = commit.commit.message.split('\n')[0]
         if len(msg) < 10:
             issues.append(f"Commit message too short: '{msg}'")
-    
+
     # Check file size
     for file in changed_files:
         if file.changes > 500:
             issues.append(f"File {file.filename} has too many changes ({file.changes} lines)")
-    
+
     # Apply custom guidelines if available
     if guideline_content:
         # Parse guidelines and apply custom checks
@@ -184,5 +183,9 @@ This automated check found some issues with your PR:
 Please address these issues and update your PR. Thank you!
 """
     pr.create_issue_comment(comment)
-    
+
 print("PR processing completed.")
+EOF
+
+# Run script
+python3 process_pr.py "$GITHUB_TOKEN" "$PR_NUMBER" "$REPOSITORY" "$GENERATE_DESCRIPTION" "$VALIDATE_PR" "$GUIDELINE_FILE"
