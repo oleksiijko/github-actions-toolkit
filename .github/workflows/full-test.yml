@@ -213,12 +213,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: echo "hello artifact" > report.md
-
-      - uses: ./artifact-uploader
+      - name: 🌐 Run Performance Report Generator
+        uses: ./performance-report-generator
         with:
-          name: collected-artifacts
-          path: report.md
+          url: https://example.com
+          output_format: json
+
+      - name: 🏗️ Upload using custom artifact-uploader
+        uses: ./artifact-uploader
+        with:
+          name: lighthouse-report
+          path: report.json
+
 
   deploy-anywhere:
     name: 🌐 Deploy Anywhere
