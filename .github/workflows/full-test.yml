@@ -80,8 +80,20 @@ jobs:
     name: 📊 Performance Report
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./performance-report-generator
+      - name: Run Performance Report Generator
+        uses: ./performance-report-generator
+        with:
+          url: https://example.com
+          output_format: json
+
+      - name: Show Report File
+        run: cat report.json || echo "Report not found"
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: report.json
 
   badge-gen:
     name: 🏅 Badge Generator
