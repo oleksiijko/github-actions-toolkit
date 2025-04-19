@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Artifact Uploader
 
-Sets up required tools or environment for other actions.
+Uploads build artifacts to GitHub Artifacts or external storage (e.g. S3).
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Artifact Uploader
+  uses: ./github-actions-toolkit/artifact-uploader
   with:
     example_input: value
 ```

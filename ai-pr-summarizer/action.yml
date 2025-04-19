@@ -1,0 +1,6 @@
+name: 'Ai Pr Summarizer'
+description: 'TODO: Implement Ai Pr Summarizer functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

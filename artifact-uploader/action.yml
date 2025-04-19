@@ -1,0 +1,6 @@
+name: 'Artifact Uploader'
+description: 'TODO: Implement Artifact Uploader functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

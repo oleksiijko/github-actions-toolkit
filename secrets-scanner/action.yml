@@ -1,0 +1,6 @@
+name: 'Secrets Scanner'
+description: 'TODO: Implement Secrets Scanner functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

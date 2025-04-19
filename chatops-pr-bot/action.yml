@@ -1,0 +1,6 @@
+name: 'Chatops Pr Bot'
+description: 'TODO: Implement Chatops Pr Bot functionality.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

@@ -1,6 +1,6 @@
-# Setup Toolkit
+# Monorepo Splitter
 
-Sets up required tools or environment for other actions.
+Helps split monorepo packages into independent branches or mirrors.
 
 ## Inputs
 
@@ -11,8 +11,8 @@ Sets up required tools or environment for other actions.
 ## Example usage
 
 ```yaml
-- name: Setup Toolkit
-  uses: ./github-actions-toolkit/setup-toolkit
+- name: Monorepo Splitter
+  uses: ./github-actions-toolkit/monorepo-splitter
   with:
     example_input: value
 ```
