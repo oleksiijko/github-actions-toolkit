@@ -2,7 +2,7 @@
 set -e
 
 SOURCE="$INPUT_SOURCE"
-TARGET_REPO="$INPUT_REPO"
+TARGET_REPO="$INPUT_TARGET_REPO"
 BRANCH="${INPUT_BRANCH:-main}"
 
 echo "📦 Splitting $SOURCE to $TARGET_REPO (branch: $BRANCH)..."

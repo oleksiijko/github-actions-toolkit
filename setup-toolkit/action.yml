@@ -1,5 +1,6 @@
 name: 'Setup Toolkit'
 description: 'Setup GitHub Actions Toolkit in your repository'
+
 inputs:
   modules:
     description: 'Modules to setup (comma-separated)'
@@ -13,15 +14,18 @@ inputs:
     description: 'Directory to store workflow files'
     required: false
     default: '.github/workflows'
+
 runs:
   using: 'composite'
   steps:
-    - name: Create directories
+    - name: Make script executable
+      shell: bash
+      run: chmod +x "${{ github.action_path }}/setup.sh"
+
+    - name: Run Setup Script
       shell: bash
       run: |
-        mkdir -p ${{ inputs.config_dir }}
-        mkdir -p ${{ inputs.workflow_dir }}
-        
-    - name: Setup modules
-      shell: bash
-      run: ${{ github.action_path }}/setup.sh ${{ inputs.modules }} ${{ inputs.config_dir }} ${{ inputs.workflow_dir }}
+        "${{ github.action_path }}/setup.sh" \
+          "${{ inputs.modules }}" \
+          "${{ inputs.config_dir }}" \
+          "${{ inputs.workflow_dir }}"

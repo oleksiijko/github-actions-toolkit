@@ -247,11 +247,14 @@ jobs:
           branch: main
       
   setup-toolkit:
-    name: ⚖️ Setup Toolkit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./setup-toolkit
+
+      - name: ⚙️ Setup GitHub Actions Toolkit
+        uses: ./setup-toolkit
+        with:
+          modules: all
 
   pr-automator:
     name: 🔄 PR Automator
