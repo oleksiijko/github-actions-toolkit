@@ -271,7 +271,7 @@ jobs:
           repository: ${{ github.repository }}
           generate_description: true
           validate_pr: true
-          guideline_file: .github/pr_guidelines.md
+          auto_fix_commits: false
 
   test-matrix:
     name: 📊 Matrix Runner

@@ -1,0 +1,14 @@
+{
+  "title_min_length": 10,
+  "description_min_length": 50,
+  "allow_wip": false,
+  "require_test_files": true,
+  "max_file_changes": 500,
+  "commit_message_min_length": 10,
+  "disallowed_words": [
+    "fixes",
+    "test",
+    "temp"
+  ],
+  "require_guideline_acknowledgement": true
+}
