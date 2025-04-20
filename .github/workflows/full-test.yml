@@ -297,41 +297,47 @@ jobs:
   test-runner:
     name: ✅ Test Runner
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: 🕵️ Detect Framework
-        id: detect
-        run: |
-          if [ -f "package.json" ]; then
-            echo "framework=jest" >> $GITHUB_OUTPUT
-          elif [ -f "requirements.txt" ]; then
-            echo "framework=pytest" >> $GITHUB_OUTPUT
-          elif [ -f "go.mod" ]; then
-            echo "framework=go" >> $GITHUB_OUTPUT
-          else
-            echo "framework=unknown" >> $GITHUB_OUTPUT
-
-      - name: 🚨 Fail if unknown framework
-        if: steps.detect.outputs.framework == 'unknown'
-        run: |
-          echo "❌ No supported test framework detected."
-          exit 1
-
-      - name: ✅ Run Tests
+      - name: 🧪 Run Tests with Custom Runner
         uses: ./test-runner
         with:
-          framework: ${{ steps.detect.outputs.framework }}
+          framework: jest
+          directories: ./examples/nodejs-project
           parallel: auto
-          cache: true
-          pattern: ""
+          retry: 2
+          pattern: "**/*.test.js"
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
       - name: 📦 Upload JUnit Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: junit-report
-          path: |
-            ./junit.xml
-            **/junit.xml
+          path: ./reports/junit.xml
+
+      - name: 🧾 Upload Log Output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: ./logs/output.log
+
+      - name: 🧠 Post Test Summary to PR (if failure)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('./logs/output.log', 'utf8');
+            const summary = `## ❌ Test Failure Log\n\n\`\`\`\n${log.slice(-2000)}\n\`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            })
 
