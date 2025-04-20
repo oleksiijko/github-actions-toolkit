@@ -9,9 +9,12 @@ CACHE=$5
 PATTERN=$6
 RETRY=${7:-1}
 OPENAI_KEY=$8
+THRESHOLD=${9:-70}
 
 IFS=',' read -ra DIR_ARRAY <<< "$DIRECTORIES"
-mkdir -p artifacts reports logs
+ROOT_DIR="$(pwd)"
+ARTIFACT_DIR="$ROOT_DIR/artifacts"
+mkdir -p "$ARTIFACT_DIR" "$ROOT_DIR/reports" "$ROOT_DIR/logs"
 
 start_time=$(date +%s)
 
@@ -25,8 +28,8 @@ for dir in "${DIR_ARRAY[@]}"; do
   cd "$dir" || continue
 
   # Ensure log file exists
-  mkdir -p ../artifacts
-  touch ../artifacts/test.log
+  mkdir -p "$ARTIFACT_DIR"
+  touch "$ARTIFACT_DIR/test.log"
 
   # Install deps if package.json exists
   if [ -f "package.json" ]; then
@@ -39,7 +42,7 @@ for dir in "${DIR_ARRAY[@]}"; do
     STATUS=0
 
     if [ -n "$CUSTOM_COMMAND" ]; then
-      bash -c "$CUSTOM_COMMAND" > ../artifacts/test.log 2>&1 || STATUS=$?
+      bash -c "$CUSTOM_COMMAND" > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
     else
       case "$FRAMEWORK" in
         jest)
@@ -47,31 +50,30 @@ for dir in "${DIR_ARRAY[@]}"; do
             ${PATTERN:+--testMatch "$PATTERN"} \
             --maxWorkers="$PARALLEL" \
             --coverage --coverageReporters=text --coverageReporters=lcov \
-            --outputFile="../artifacts/junit.xml" \
+            --outputFile="$ARTIFACT_DIR/junit.xml" \
             --reporters=default \
-            --reporters=jest-junit > ../artifacts/test.log 2>&1 || STATUS=$?
+            --reporters=jest-junit > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
 
-          [ -f coverage/lcov-report/index.html ] && cp coverage/lcov-report/index.html ../artifacts/coverage.html || echo "ℹ️ No coverage HTML found"
+          [ -f coverage/lcov-report/index.html ] && cp coverage/lcov-report/index.html "$ARTIFACT_DIR/coverage.html" || echo "ℹ️ No coverage HTML found"
           ;;
         vitest)
-          npx vitest run --coverage.enabled=true > ../artifacts/test.log 2>&1 || STATUS=$?
+          npx vitest run --coverage.enabled=true > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           ;;
         ava)
-          npx ava ${PATTERN:+$PATTERN} > ../artifacts/test.log 2>&1 || STATUS=$?
+          npx ava ${PATTERN:+$PATTERN} > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           ;;
         pytest)
           pytest ${PATTERN:+-k "$PATTERN"} -n "$PARALLEL" \
             --cov=. --cov-report=term --cov-report=html \
-            --junitxml="../artifacts/junit.xml" > ../artifacts/test.log 2>&1 || STATUS=$?
-
-          [ -d htmlcov ] && cp -r htmlcov ../artifacts/htmlcov || echo "ℹ️ No htmlcov folder found"
+            --junitxml="$ARTIFACT_DIR/junit.xml" > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
+          [ -d htmlcov ] && cp -r htmlcov "$ARTIFACT_DIR/htmlcov" || echo "ℹ️ No htmlcov folder found"
           ;;
         nose)
-          nosetests --with-xunit --xunit-file=../artifacts/junit.xml > ../artifacts/test.log 2>&1 || STATUS=$?
+          nosetests --with-xunit --xunit-file="$ARTIFACT_DIR/junit.xml" > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           ;;
         go)
-          go test -v -coverprofile=coverage.out ./... > ../artifacts/test.log 2>&1 || STATUS=$?
-          [ -f coverage.out ] && go tool cover -html=coverage.out -o ../artifacts/coverage.html || echo "ℹ️ No Go coverage HTML found"
+          go test -v -coverprofile=coverage.out ./... > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
+          [ -f coverage.out ] && go tool cover -html=coverage.out -o "$ARTIFACT_DIR/coverage.html" || echo "ℹ️ No Go coverage HTML found"
           ;;
         *)
           echo "❌ Unsupported framework: $FRAMEWORK"
@@ -98,8 +100,8 @@ echo "time=$time_taken" >> "$GITHUB_OUTPUT"
 
 # 🔢 Extract coverage
 coverage=0
-if grep -qi "Coverage" artifacts/test.log; then
-  coverage=$(grep -i 'Coverage' artifacts/test.log | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)
+if grep -qi "Coverage" "$ARTIFACT_DIR/test.log"; then
+  coverage=$(grep -i 'Coverage' "$ARTIFACT_DIR/test.log" | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)
   echo "coverage=$coverage" >> "$GITHUB_OUTPUT"
 fi
 
@@ -124,13 +126,13 @@ if [ -n "$coverage" ]; then
   <rect x='60' width='60' height='20' fill='$COLOR'/>
   <text x='30' y='14' fill='#fff' font-family='Verdana' font-size='11'>coverage</text>
   <text x='90' y='14' fill='#000' font-family='Verdana' font-size='11'>${coverage}%</text>
-</svg>" > artifacts/coverage-badge.svg
+</svg>" > "$ARTIFACT_DIR/coverage-badge.svg"
 fi
 
 # 🤖 AI analysis
-if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" && -f ../artifacts/test.log ]]; then
+if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" && -f "$ARTIFACT_DIR/test.log" ]]; then
   echo "🤖 Analyzing failures with OpenAI..."
-  MSG=$(tail -n 50 ../artifacts/test.log | jq -Rs .)
+  MSG=$(tail -n 50 "$ARTIFACT_DIR/test.log" | jq -Rs .)
   curl https://api.openai.com/v1/chat/completions \
     -H "Authorization: Bearer $OPENAI_KEY" \
     -H "Content-Type: application/json" \
@@ -140,7 +142,7 @@ if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" && -f ../artifacts/test.log ]]; then
         {"role": "system", "content": "You are a test failure analyzer."},
         {"role": "user", "content": "Analyze this test output and suggest a fix: '"$MSG"'"}
       ]
-    }' > ../artifacts/ai-analysis.json || echo "⚠️ AI analysis failed"
+    }' > "$ARTIFACT_DIR/ai-analysis.json" || echo "⚠️ AI analysis failed"
 fi
 
 echo "✅ Test Runner completed in ${time_taken}s"
