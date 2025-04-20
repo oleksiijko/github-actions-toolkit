@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
     bc \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+
 ENV GOLANG_VERSION 1.20.12
 RUN curl -fsSL "https://golang.org/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz" -o go.tar.gz \
     && tar -C /usr/local -xzf go.tar.gz \

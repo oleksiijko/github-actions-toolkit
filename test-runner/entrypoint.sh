@@ -14,7 +14,7 @@ THRESHOLD=${9:-70}
 IFS=',' read -ra DIR_ARRAY <<< "$DIRECTORIES"
 ROOT_DIR="$(pwd)"
 ARTIFACT_DIR="$ROOT_DIR/artifacts"
-mkdir -p "$ARTIFACT_DIR" "$ROOT_DIR/reports" "$ROOT_DIR/logs"
+mkdir -p "$ARTIFACT_DIR" "$ROOT_DIR/reports" "$ROOT_DIR/logs" "$ARTIFACT_DIR/coverage-history"
 
 start_time=$(date +%s)
 
@@ -23,6 +23,7 @@ if [ "$PARALLEL" = "auto" ]; then
   PARALLEL=$(nproc)
 fi
 
+# Run tests in each directory
 for dir in "${DIR_ARRAY[@]}"; do
   echo "🧪 Running tests in: $dir"
   cd "$dir" || continue
@@ -56,26 +57,29 @@ for dir in "${DIR_ARRAY[@]}"; do
 
           [ -f coverage/lcov-report/index.html ] && cp coverage/lcov-report/index.html "$ARTIFACT_DIR/coverage.html" || echo "ℹ️ No coverage HTML found"
           ;;
+
+        # Add other frameworks (e.g. vitest, ava, etc.)
         vitest)
           npx vitest run --coverage.enabled=true > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           ;;
+
         ava)
           npx ava ${PATTERN:+$PATTERN} > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           ;;
+
         pytest)
           pytest ${PATTERN:+-k "$PATTERN"} -n "$PARALLEL" \
             --cov=. --cov-report=term --cov-report=html \
             --junitxml="$ARTIFACT_DIR/junit.xml" > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           [ -d htmlcov ] && cp -r htmlcov "$ARTIFACT_DIR/htmlcov" || echo "ℹ️ No htmlcov folder found"
           ;;
-        nose)
-          nosetests --with-xunit --xunit-file="$ARTIFACT_DIR/junit.xml" > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
-          ;;
+
         go)
           go test -v -coverprofile=coverage.out ./... > "$ARTIFACT_DIR/test.log" 2>&1 || STATUS=$?
           [ -f coverage.out ] && go tool cover -html=coverage.out -o "$ARTIFACT_DIR/coverage.html" || echo "ℹ️ No Go coverage HTML found"
           ;;
-        *)
+
+        * )
           echo "❌ Unsupported framework: $FRAMEWORK"
           exit 1
           ;;
