@@ -11,7 +11,7 @@ RETRY=${7:-1}
 OPENAI_KEY=$8
 
 IFS=',' read -ra DIR_ARRAY <<< "$DIRECTORIES"
-mkdir -p reports artifacts
+mkdir -p artifacts reports logs
 
 start_time=$(date +%s)
 
@@ -22,6 +22,8 @@ fi
 for dir in "${DIR_ARRAY[@]}"; do
   echo "🧪 Running tests in: $dir"
   cd "$dir" || continue
+
+  mkdir -p ../artifacts
 
   for attempt in $(seq 1 "$RETRY"); do
     echo "🔁 Attempt $attempt"
@@ -39,7 +41,7 @@ for dir in "${DIR_ARRAY[@]}"; do
             --outputFile="../artifacts/junit.xml" \
             --reporters=default \
             --reporters=jest-junit > ../artifacts/test.log 2>&1 || STATUS=$?
-          cp coverage/lcov-report/index.html ../artifacts/coverage.html || true
+          [ -f coverage/lcov-report/index.html ] && cp coverage/lcov-report/index.html ../artifacts/coverage.html || echo "ℹ️ No coverage HTML found"
           ;;
         vitest)
           npx vitest run --coverage.enabled=true > ../artifacts/test.log 2>&1 || STATUS=$?
@@ -51,14 +53,14 @@ for dir in "${DIR_ARRAY[@]}"; do
           pytest ${PATTERN:+-k "$PATTERN"} -n "$PARALLEL" \
             --cov=. --cov-report=term --cov-report=html \
             --junitxml="../artifacts/junit.xml" > ../artifacts/test.log 2>&1 || STATUS=$?
-          cp -r htmlcov ../artifacts/htmlcov || true
+          [ -d htmlcov ] && cp -r htmlcov ../artifacts/htmlcov || echo "ℹ️ No htmlcov folder found"
           ;;
         nose)
           nosetests --with-xunit --xunit-file=../artifacts/junit.xml > ../artifacts/test.log 2>&1 || STATUS=$?
           ;;
         go)
           go test -v -coverprofile=coverage.out ./... > ../artifacts/test.log 2>&1 || STATUS=$?
-          go tool cover -html=coverage.out -o ../artifacts/coverage.html || true
+          [ -f coverage.out ] && go tool cover -html=coverage.out -o ../artifacts/coverage.html || echo "ℹ️ No Go coverage file found"
           ;;
         *)
           echo "❌ Unsupported framework: $FRAMEWORK"
@@ -84,22 +86,24 @@ time_taken=$((end_time - start_time))
 
 echo "time=$time_taken" >> "$GITHUB_OUTPUT"
 
-# Coverage extraction
+# Extract coverage
 coverage=0
-if grep -q "Coverage" artifacts/test.log; then
+if grep -qi "Coverage" artifacts/test.log; then
   coverage=$(grep -i 'Coverage' artifacts/test.log | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)
   echo "coverage=$coverage" >> "$GITHUB_OUTPUT"
 fi
 
-# Summary
+# Markdown summary
 {
   echo "## ✅ Test Summary"
+  echo ""
   echo "- Framework: $FRAMEWORK"
   echo "- Time: ${time_taken}s"
   echo "- Coverage: ${coverage:-unknown}%"
+  echo "- Retries: $RETRY"
 } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
 
-# Badge
+# Badge generation
 if [ -n "$coverage" ]; then
   COLOR="red"
   if (( $(echo "$coverage >= 80" | bc -l) )); then COLOR="green"
@@ -115,7 +119,7 @@ fi
 
 # AI analysis
 if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" ]]; then
-  echo "Analyzing failures with OpenAI..."
+  echo "🤖 Analyzing failures with OpenAI..."
   MSG=$(tail -n 50 artifacts/test.log | jq -Rs .)
   curl https://api.openai.com/v1/chat/completions \
     -H "Authorization: Bearer $OPENAI_KEY" \
@@ -126,7 +130,7 @@ if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" ]]; then
         {"role": "system", "content": "You are a test failure analyzer."},
         {"role": "user", "content": "Analyze this test output and suggest a fix: '"$MSG"'"}
       ]
-    }' > artifacts/ai-analysis.json || true
+    }' > artifacts/ai-analysis.json || echo "⚠️ AI analysis failed"
 fi
 
 echo "✅ Test Runner completed in ${time_taken}s"
