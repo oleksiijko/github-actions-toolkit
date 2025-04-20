@@ -5,25 +5,26 @@ on:
   push:
   pull_request:
 
+permissions:
+  pull-requests: write
+
 jobs:
   summarize-pr:
     name: 🤖 AI PR Summarizer
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Run AI PR Summarizer
         uses: ./ai-pr-summarizer
         with:
-          repo: your-user/github-actions-toolkit
-          pr_number: 1
+          pr_number: ${{ github.event.pull_request.number }}
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print GPT Summary
-        run: cat summary.md
+        run: cat summary.md || echo "No summary generated"
 
       - name: Upload PR Summary
         uses: actions/upload-artifact@v4
@@ -35,11 +36,8 @@ jobs:
     name: 💬 ChatOps Command Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run ChatOps Bot
-        uses: ./chatops-pr-bot
+      - uses: actions/checkout@v3
+      - uses: ./chatops-pr-bot
         with:
           payload_path: ./examples/payload.json
 
@@ -47,17 +45,11 @@ jobs:
     name: 🧹 Code Formatter
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Copy Example Files
-        run: cp -r ./examples/nodejs-project/* ./
-
-      - name: Format Code
-        uses: ./code-formatter
+      - uses: actions/checkout@v3
+      - run: cp -r ./examples/nodejs-project/* ./
+      - uses: ./code-formatter
         with:
           example_input: prettier
-
       - name: Show formatted files
         run: git diff --stat || echo "No changes"
 
@@ -65,15 +57,321 @@ jobs:
     name: 📦 Auto Update Dependencies
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Copy Node Project
-        run: cp -r ./examples/nodejs-project/* ./
-
-      - name: Run Dependency Updater
-        uses: ./auto-update-dependencies
+      - uses: actions/checkout@v3
+      - run: cp -r ./examples/nodejs-project/* ./
+      - uses: ./auto-update-dependencies
         with:
           package_manager: npm
           commit_message: "test: deps"
           branch: main
+
+  secrets-scan:
+    name: 🔐 Secrets Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./secrets-scanner
+
+  security-scan:
+    name: 🔒 Security Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./security-scanner
+
+  performance-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📄 Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: 🌐 Run Performance Report Generator
+        uses: ./performance-report-generator
+        with:
+          url: https://example.com
+          output_format: json
+
+      - name: 📃 Show Report File
+        run: cat report.json || echo "Report not found"
+
+      - name: 📂 Upload JSON Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: report.json
+
+      - name: 📝 Generate Markdown Summary
+        run: |
+          echo "## ✨ Lighthouse Summary" > summary.md
+          echo "" >> summary.md
+          echo "| Metric | Value |" >> summary.md
+          echo "|--------|-------|" >> summary.md
+          echo "| LCP | $(jq -r '.audits["largest-contentful-paint"].displayValue' report.json) |" >> summary.md
+          echo "| CLS | $(jq -r '.audits["cumulative-layout-shift"].displayValue' report.json) |" >> summary.md
+          echo "| TBT | $(jq -r '.audits["total-blocking-time"].displayValue' report.json) |" >> summary.md
+          echo "| FCP | $(jq -r '.audits["first-contentful-paint"].displayValue' report.json) |" >> summary.md
+          echo "| TTI | $(jq -r '.audits["interactive"].displayValue' report.json) |" >> summary.md
+
+      - name: 📝 Upload Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-summary
+          path: summary.md
+
+      - name: 👁️ Print Markdown Summary in UI
+        run: cat summary.md
+
+      - name: 🚨 Alert on Poor LCP
+        run: |
+          LCP=$(jq -r '.audits["largest-contentful-paint"].numericValue' report.json)
+          if (( $(echo "$LCP > 2500" | bc -l) )); then
+            echo "::warning::LCP is high: ${LCP}ms"
+          else
+            echo "LCP is fine: ${LCP}ms"
+          fi
+
+      - name: 📬 Post Comment to PR (Optional)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+          result-encoding: string
+
+  badge-gen:
+    name: 🏅 Badge Generator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./badge-generator
+        with:
+          label: build
+          message: passing
+          color: green
+          filename: badge.svg
+
+      - name: 📂 Upload Badge
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-badge
+          path: badge.svg
+
+  dependency-diff:
+    name: 📦 Dependency Diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Dependency Diff
+        uses: ./dependency-diff
+        with:
+          path: ./examples/nodejs-project
+
+      - name: Show Dependency Diff
+        run: cat deps-diff.md || echo "No diff found"
+      
+      - name: 📬 Post Dependency Diff Comment to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('dep-diff.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-diff
+          path: deps-diff.md
+        
+
+  dead-code:
+    name: 🧹 Dead Code Cleaner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./dead-code-cleaner
+        with:
+          path: ./examples/nodejs-project
+        
+
+  artifact-upload:
+    name: 💾 Artifact Uploader
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 🌐 Run Performance Report Generator
+        uses: ./performance-report-generator
+        with:
+          url: https://example.com
+          output_format: json
+
+      - name: 🏗️ Upload using custom artifact-uploader
+        uses: ./artifact-uploader
+        with:
+          name: lighthouse-report
+          path: report.json
+
+
+  deploy-anywhere:
+    name: 🌐 Deploy Anywhere
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./deploy-anywhere
+
+  monorepo-splitter:
+    name: 📄 Monorepo Splitter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Monorepo Splitter
+        uses: ./monorepo-splitter
+        with:
+          source: examples/nodejs-project
+          target_repo: https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/oleksiijko/example-split.git
+          branch: main
+      
+  setup-toolkit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: ⚙️ Setup GitHub Actions Toolkit
+        uses: ./setup-toolkit
+        with:
+          modules: all
+        
+
+  pr-automator:
+    name: 🔄 PR Automator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run PR Automator
+        uses: ./pr-automator
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ github.event.pull_request.number }}
+          repository: ${{ github.repository }}
+          generate_description: true
+          validate_pr: true
+          auto_fix_commits: false
+
+  test-matrix:
+    name: 📊 Matrix Runner
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16, 18]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Use example Node project
+        run: cp -r ./examples/nodejs-project/* ./
+
+      - name: Run tests on Node.js ${{ matrix.node }}
+        uses: ./test-matrix-runner
+
+
+  test-runner:
+    name: ✅ Test Runner
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: 🧪 Run Tests with Custom Runner
+        id: run-tests
+        uses: ./test-runner
+        with:
+          framework: jest
+          directories: ./examples/nodejs-project
+          parallel: auto
+          retry: 2
+          pattern: "**/*.test.js"
+          threshold: 70
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: 🚨 Fail if coverage is below threshold
+        if: steps.run-tests.outputs.coverage && steps.run-tests.outputs.coverage < 70
+        run: |
+          echo "❌ Coverage below threshold: ${{ steps.run-tests.outputs.coverage }}%"
+          exit 1
+
+      - name: 🧾 Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: artifacts/test.log
+
+      - name: 📄 Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: artifacts/coverage.html
+
+      - name: 📊 Upload Coverage History
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-history
+          path: |
+            artifacts/coverage-history.csv
+            artifacts/coverage-history.json
+            artifacts/coverage-diff.json
+
+      - name: 🧠 Upload AI Fix Suggestion
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-fix
+          path: |
+            artifacts/ai-analysis.json
+            artifacts/suggested-fix.patch
+
+      - name: 🏅 Upload Coverage Badge
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-badge
+          path: artifacts/coverage-badge.svg
+
+      - name: 💬 Post Test Summary to PR (on failure)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('./artifacts/test.log', 'utf8');
+            const summary = `## ❌ Test Failure Summary\n\n\`\`\`\n${log.slice(-1500)}\n\`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            })
+

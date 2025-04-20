@@ -1,4 +1,6 @@
-FROM alpine:3.18
+FROM node:18
+
+WORKDIR /app
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

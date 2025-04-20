@@ -2,7 +2,13 @@
   "name": "demo-node-project",
   "version": "1.0.0",
   "description": "Demo project for auto-update-dependencies",
+  "scripts": {
+    "test": "jest --coverage"
+  },
   "dependencies": {
     "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
   }
 }

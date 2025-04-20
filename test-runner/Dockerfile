@@ -5,17 +5,27 @@ RUN apt-get update && apt-get install -y \
     git \
     python3 \
     python3-pip \
-    nodejs \
+    ca-certificates \
+    tar \
     npm \
+    unzip \
     openjdk-11-jdk \
+    jq \
+    bc \
     && rm -rf /var/lib/apt/lists/*
 
-# Install test frameworks and runners
-RUN npm install -g jest mocha && \
-    pip3 install pytest pytest-cov && \
-    npm install -g mocha && \
-    go install gotest.tools/gotestsum@latest && \
-    npm install -g junit-xml
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+
+ENV GOLANG_VERSION 1.20.12
+RUN curl -fsSL "https://golang.org/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz" -o go.tar.gz \
+    && tar -C /usr/local -xzf go.tar.gz \
+    && rm go.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+RUN npm install -g jest vitest ava mocha jest-junit \
+    && pip3 install pytest pytest-cov nose
+
+RUN node -v && npm -v && python3 -V && go version
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

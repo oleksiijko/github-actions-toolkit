@@ -1,5 +1,15 @@
 name: 'Dependency Diff'
-description: 'TODO: Implement Dependency Diff functionality.'
+description: 'Detects changes in dependencies between branches or commits'
+
+inputs:
+  base:
+    description: 'Base ref to compare against (default: main)'
+    required: false
+    default: 'main'
+  path:
+    description: 'Path to package directory or monorepo sub-folder'
+    required: false
+    default: '.'
 
 runs:
   using: 'docker'

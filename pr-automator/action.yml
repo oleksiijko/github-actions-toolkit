@@ -1,5 +1,6 @@
 name: 'PR Automator'
 description: 'Automated PR validation and description generation'
+
 inputs:
   github_token:
     description: 'GitHub token for API access'
@@ -22,11 +23,21 @@ inputs:
     description: 'Path to PR guidelines file'
     required: false
     default: '.github/pr_guidelines.md'
+  auto_fix_commits:
+    description: 'Try to auto-fix short commit messages'
+    required: false
+    default: 'false'
+  custom_rules_file:
+    description: 'Path to custom PR rules JSON'
+    required: false
+    default: '.pr_rules.json'
+
 outputs:
   status:
     description: 'PR validation status (passed, failed)'
   issues:
     description: 'Issues found during validation'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -37,3 +48,5 @@ runs:
     - ${{ inputs.generate_description }}
     - ${{ inputs.validate_pr }}
     - ${{ inputs.guideline_file }}
+    - ${{ inputs.auto_fix_commits }}
+    - ${{ inputs.custom_rules_file }}

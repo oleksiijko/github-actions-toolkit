@@ -1,3 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 set -e
-echo "🚧 This action is under development. Placeholder script executed."
+
+echo "🧹 Scanning for dead code in $INPUT_PATH..."
+
+cd "$INPUT_PATH"
+
+unimported --silent || true

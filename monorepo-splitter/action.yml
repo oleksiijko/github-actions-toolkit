@@ -1,5 +1,17 @@
 name: 'Monorepo Splitter'
-description: 'TODO: Implement Monorepo Splitter functionality.'
+description: 'Splits a directory into a separate Git repository'
+
+inputs:
+  source:
+    description: 'Path to the directory in the monorepo (e.g., packages/example)'
+    required: true
+  repo:
+    description: 'Git repository URL to push to (e.g., git@github.com:user/example.git)'
+    required: true
+  branch:
+    description: 'Branch to push to'
+    required: false
+    default: 'main'
 
 runs:
   using: 'docker'
