@@ -15,6 +15,7 @@ mkdir -p artifacts reports logs
 
 start_time=$(date +%s)
 
+# Auto-parallel
 if [ "$PARALLEL" = "auto" ]; then
   PARALLEL=$(nproc)
 fi
@@ -23,7 +24,15 @@ for dir in "${DIR_ARRAY[@]}"; do
   echo "🧪 Running tests in: $dir"
   cd "$dir" || continue
 
+  # Ensure log file exists
   mkdir -p ../artifacts
+  touch ../artifacts/test.log
+
+  # Install deps if package.json exists
+  if [ -f "package.json" ]; then
+    echo "📦 Installing dependencies..."
+    npm install --no-audit --prefer-offline || true
+  fi
 
   for attempt in $(seq 1 "$RETRY"); do
     echo "🔁 Attempt $attempt"
@@ -35,12 +44,13 @@ for dir in "${DIR_ARRAY[@]}"; do
       case "$FRAMEWORK" in
         jest)
           npx jest --ci \
-            ${PATTERN:+--testMatch "**/$PATTERN"} \
+            ${PATTERN:+--testMatch "$PATTERN"} \
             --maxWorkers="$PARALLEL" \
             --coverage --coverageReporters=text --coverageReporters=lcov \
             --outputFile="../artifacts/junit.xml" \
             --reporters=default \
             --reporters=jest-junit > ../artifacts/test.log 2>&1 || STATUS=$?
+
           [ -f coverage/lcov-report/index.html ] && cp coverage/lcov-report/index.html ../artifacts/coverage.html || echo "ℹ️ No coverage HTML found"
           ;;
         vitest)
@@ -53,6 +63,7 @@ for dir in "${DIR_ARRAY[@]}"; do
           pytest ${PATTERN:+-k "$PATTERN"} -n "$PARALLEL" \
             --cov=. --cov-report=term --cov-report=html \
             --junitxml="../artifacts/junit.xml" > ../artifacts/test.log 2>&1 || STATUS=$?
+
           [ -d htmlcov ] && cp -r htmlcov ../artifacts/htmlcov || echo "ℹ️ No htmlcov folder found"
           ;;
         nose)
@@ -60,7 +71,7 @@ for dir in "${DIR_ARRAY[@]}"; do
           ;;
         go)
           go test -v -coverprofile=coverage.out ./... > ../artifacts/test.log 2>&1 || STATUS=$?
-          [ -f coverage.out ] && go tool cover -html=coverage.out -o ../artifacts/coverage.html || echo "ℹ️ No Go coverage file found"
+          [ -f coverage.out ] && go tool cover -html=coverage.out -o ../artifacts/coverage.html || echo "ℹ️ No Go coverage HTML found"
           ;;
         *)
           echo "❌ Unsupported framework: $FRAMEWORK"
@@ -83,17 +94,16 @@ done
 
 end_time=$(date +%s)
 time_taken=$((end_time - start_time))
-
 echo "time=$time_taken" >> "$GITHUB_OUTPUT"
 
-# Extract coverage
+# 🔢 Extract coverage
 coverage=0
 if grep -qi "Coverage" artifacts/test.log; then
   coverage=$(grep -i 'Coverage' artifacts/test.log | grep -oE '[0-9]+(\.[0-9]+)?' | head -n1)
   echo "coverage=$coverage" >> "$GITHUB_OUTPUT"
 fi
 
-# Markdown summary
+# 📝 Markdown summary
 {
   echo "## ✅ Test Summary"
   echo ""
@@ -103,7 +113,7 @@ fi
   echo "- Retries: $RETRY"
 } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
 
-# Badge generation
+# 🏅 Badge generation
 if [ -n "$coverage" ]; then
   COLOR="red"
   if (( $(echo "$coverage >= 80" | bc -l) )); then COLOR="green"
@@ -117,10 +127,10 @@ if [ -n "$coverage" ]; then
 </svg>" > artifacts/coverage-badge.svg
 fi
 
-# AI analysis
-if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" ]]; then
+# 🤖 AI analysis
+if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" && -f ../artifacts/test.log ]]; then
   echo "🤖 Analyzing failures with OpenAI..."
-  MSG=$(tail -n 50 artifacts/test.log | jq -Rs .)
+  MSG=$(tail -n 50 ../artifacts/test.log | jq -Rs .)
   curl https://api.openai.com/v1/chat/completions \
     -H "Authorization: Bearer $OPENAI_KEY" \
     -H "Content-Type: application/json" \
@@ -130,7 +140,7 @@ if [[ "$STATUS" != "0" && -n "$OPENAI_KEY" ]]; then
         {"role": "system", "content": "You are a test failure analyzer."},
         {"role": "user", "content": "Analyze this test output and suggest a fix: '"$MSG"'"}
       ]
-    }' > artifacts/ai-analysis.json || echo "⚠️ AI analysis failed"
+    }' > ../artifacts/ai-analysis.json || echo "⚠️ AI analysis failed"
 fi
 
 echo "✅ Test Runner completed in ${time_taken}s"
