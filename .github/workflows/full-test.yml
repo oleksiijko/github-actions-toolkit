@@ -303,6 +303,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🧪 Run Tests with Custom Runner
+        id: run-tests
         uses: ./test-runner
         with:
           framework: jest
@@ -310,30 +311,63 @@ jobs:
           parallel: auto
           retry: 2
           pattern: "**/*.test.js"
+          threshold: 70
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: 📦 Upload JUnit Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-report
-          path: artifacts/test.log
+      - name: 🚨 Fail if coverage is below threshold
+        if: steps.run-tests.outputs.coverage && steps.run-tests.outputs.coverage < 70
+        run: |
+          echo "❌ Coverage below threshold: ${{ steps.run-tests.outputs.coverage }}%"
+          exit 1
 
-      - name: 🧾 Upload Log Output
+      - name: 🧾 Upload Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-logs
           path: artifacts/test.log
 
-      - name: 🧠 Post Test Summary to PR (if failure)
+      - name: 📄 Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: artifacts/coverage.html
+
+      - name: 📊 Upload Coverage History
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-history
+          path: |
+            artifacts/coverage-history.csv
+            artifacts/coverage-history.json
+            artifacts/coverage-diff.json
+
+      - name: 🧠 Upload AI Fix Suggestion
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-fix
+          path: |
+            artifacts/ai-analysis.json
+            artifacts/suggested-fix.patch
+
+      - name: 🏅 Upload Coverage Badge
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-badge
+          path: artifacts/coverage-badge.svg
+
+      - name: 💬 Post Test Summary to PR (on failure)
         if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
-            const log = fs.readFileSync('./logs/output.log', 'utf8');
-            const summary = `## ❌ Test Failure Log\n\n\`\`\`\n${log.slice(-2000)}\n\`\`\``;
+            const log = fs.readFileSync('./artifacts/test.log', 'utf8');
+            const summary = `## ❌ Test Failure Summary\n\n\`\`\`\n${log.slice(-1500)}\n\`\`\``;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
