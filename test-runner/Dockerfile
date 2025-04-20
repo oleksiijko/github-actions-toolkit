@@ -14,7 +14,8 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 RUN npm install -g jest vitest ava mocha jest-junit \
     && pip3 install pytest pytest-cov nose \
-    && go install github.com/matm/gocov-html@latest
+    && go install github.com/axw/gocov/gocov@latest \
+    && go install github.com/AlekSi/gocov-xml@latest
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
