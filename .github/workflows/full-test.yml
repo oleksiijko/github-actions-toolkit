@@ -281,11 +281,18 @@ jobs:
         node: [14, 16, 18]
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: ./test-matrix-runner
+
+      - name: Use example Node project
+        run: cp -r ./examples/nodejs-project/* ./
+
+      - name: Run tests on Node.js ${{ matrix.node }}
+        uses: ./test-matrix-runner
+
 
   test-runner:
     name: ✅ Test Runner
